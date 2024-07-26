@@ -32,7 +32,7 @@ pipeline {
         }
 
       
-      
+
 
         stage ("Code Quality") {
             steps {
@@ -42,6 +42,7 @@ pipeline {
                 }
             }
         }
+        
         
         //     stage ("terraform init") {
         //     steps {
