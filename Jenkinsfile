@@ -30,6 +30,7 @@ pipeline {
         //         //npm publish --registry http://ec2-18-222-132-112.us-east-2.compute.amazonaws.com:8081/repository/postboard-server/
             }
         }
+        
       
 
         stage ("Code Quality") {
