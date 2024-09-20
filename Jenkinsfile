@@ -34,14 +34,14 @@ pipeline {
       
 
 
-        // stage ("Code Quality") {
-        //     steps {
-        //         withSonarQubeEnv("SonarQube") {
-        //             sh "npm install sonar-scanner"
-        //             sh "npm run sonar"
-        //         }
-        //     }
-        // }
+        stage ("Code Quality") {
+            steps {
+                withSonarQubeEnv("SonarQube") {
+                    sh "npm install sonar-scanner"
+                    sh "npm run sonar"
+                }
+            }
+        }
         
         
         //     stage ("terraform init") {
