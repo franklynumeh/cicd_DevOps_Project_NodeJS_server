@@ -10,7 +10,6 @@ import userRouter from './routes/userRoutes.js';
 import orderRouter from './routes/orderRoutes.js';
 import uploadRouter from './routes/uploadRoutes.js';
 import reportRouter from './routes/reportRoutes.js';
-
 dotenv.config();
 mongoose.set('strictQuery', false);
 const connectionString = process.env.MONGODB_URI;
