@@ -19,7 +19,7 @@ pipeline {
             }
         }
        
-        stage("Build &Upload") {
+        stage("Build & Upload") {
             steps {
                 sh "npm install"
                 // sh "npm start"
@@ -64,23 +64,23 @@ pipeline {
         // }
         
         
-//         stage ('DEV Notify')  {
-//             steps {
+        stage ('DEV Notify')  {
+            steps {
 
-//       slackSend(channel:'myredditpipeline', message: "Job is successful, here is the info -  Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-//   }
-// }
+      slackSend(channel:'jenkins-server', message: "Job is successful, here is the info -  Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+  }
+}
 
 
-//  stage ('DEV Approve')  {
-//             steps {
-//                echo "Taking approval from DEV Manager for QA Deployment"     
-//             timeout(time: 7, unit: 'DAYS') {
-//             input message: 'Do you approve QA Deployment?', submitter: 'admin'
-//             }
+ stage ('DEV Approve')  {
+            steps {
+               echo "Taking approval from DEV Manager for QA Deployment"     
+            timeout(time: 7, unit: 'DAYS') {
+            input message: 'Do you approve QA Deployment?', submitter: 'admin'
+            }
 
-// }
-//    }
+}
+   }
 
 
 
