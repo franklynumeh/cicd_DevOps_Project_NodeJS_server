@@ -24,7 +24,7 @@ pipeline {
                 sh "npm install"
                 // sh "npm start"
                 
-                sh "set +x && echo \"//ec2-3-145-203-189.us-east-2.compute.amazonaws.com:8081/repository/chiemela_devops_server_nexus_repo/:_authToken=NpmToken.81d960cf-801f-39bc-a1c7-33aaa9d657db\" >> .npmrc"
+                sh "set +x && echo \"//ec2-3-145-203-189.us-east-2.compute.amazonaws.com:8081/repository/chiemela_devops_server_nexus_repo/:_authToken=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\" >> .npmrc"
                 sh "npm publish"
           //To publish without using puting the repo url in package.json do the line below
                 //  npm publish --registry http://ec2-3-145-203-189.us-east-2.compute.amazonaws.com:8081/repository/chiemela_devops_server_nexus_repo
