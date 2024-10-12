@@ -24,13 +24,13 @@ pipeline {
                 sh "npm install"
                 // sh "npm start"
                 
-        //         sh "set +x && echo \"//ec2-18-222-132-112.us-east-2.compute.amazonaws.com:8081/repository/postboard-server/:_authToken=NpmToken.e16aff1c-2ce9-3004-ac4e-b66093f87b7d\" >> .npmrc"
-        //         sh "npm publish"
-        //          To publish without using puting the repo url in package.json do the line below
-                 npm publish --registry http://ec2-3-145-203-189.us-east-2.compute.amazonaws.com:8081/repository/chiemela_devops_server_nexus_repo
+                sh "set +x && echo \"//ec2-18-222-132-112.us-east-2.compute.amazonaws.com:8081/repository/postboard-server/:_authToken=NpmToken.e16aff1c-2ce9-3004-ac4e-b66093f87b7d\" >> .npmrc"
+                sh "npm publish"
+          //To publish without using puting the repo url in package.json do the line below
+                //  npm publish --registry http://ec2-3-145-203-189.us-east-2.compute.amazonaws.com:8081/repository/chiemela_devops_server_nexus_repo
 
 
-// Put this in json file
+    // Put this in json file
     //      "publishConfig": {
     // "registry": "http://ec2-3-145-203-189.us-east-2.compute.amazonaws.com:8081/repository/chiemela_devops_server_nexus_repo/"
     // },
