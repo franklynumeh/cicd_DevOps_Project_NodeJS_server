@@ -2,7 +2,9 @@
   "name": "backend",
   "type": "module",
   "version": "1.0.0",
-
+  "publishConfig": {
+    "registry": "http://ec2-3-145-203-189.us-east-2.compute.amazonaws.com:8081/repository/chiemela_devops_server_nexus_repo/"
+    },
   "description": "",
   "main": "index.js",
   "scripts": {
