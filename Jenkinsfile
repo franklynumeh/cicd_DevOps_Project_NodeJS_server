@@ -31,9 +31,7 @@ pipeline {
             }
         }
 
-      
-
-
+    
         stage ("Code Quality") {
             steps {
                 withSonarQubeEnv("SonarQube") {
