@@ -13,11 +13,11 @@ pipeline {
             }
         }
         
-        // stage("Code Coverage") {
-        //     steps {
-        //         jacoco()
-        //     }
-        // }
+        stage("Code Coverage") {
+            steps {
+                jacoco()
+            }
+        }
        
         // stage("Build & Upload") {
         //     steps {
