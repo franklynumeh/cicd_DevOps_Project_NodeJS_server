@@ -51,20 +51,20 @@ pipeline {
             }
         }   
 
-        // stage("Build Docker Image") {
-        //     steps {
-        //         script {
-        //             docker.build("cicd-server-application-image:${env.BUILD_ID}")
-        //         }
-        //     }
-        // }
-            stage('Building image') {
-      steps{
-        script {
-          dockerImage = docker.build registry
+        stage("Build Docker Image") {
+            steps {
+                script {
+                    docker.build("cicd-server-application-image:${env.BUILD_ID}")
+                }
+            }
         }
-      }
-    }
+        //     stage('Building image') {
+    //   steps{
+    //     script {
+    //       dockerImage = docker.build registry
+    //     }
+    //   }
+    // }
         
         //     stage ("terraform init") {
         //     steps {
