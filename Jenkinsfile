@@ -22,7 +22,7 @@ pipeline {
         stage("Build & Upload") {
             steps {
                 sh "npm install"
-                sh "npm start"
+                // sh "npm start"
                 
         //         sh "set +x && echo \"//ec2-3-145-203-189.us-east-2.compute.amazonaws.com:8081/repository/chiemela_devops_server_nexus_repo/:_authToken=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\" >> .npmrc"
         //         sh "npm publish"
@@ -39,14 +39,14 @@ pipeline {
             }
         }
 
-        // stage ("Code Quality") {
-        //     steps {
-        //         withSonarQubeEnv("SonarQube") {
-        //             sh "npm install sonar-scanner"
-        //             sh "npm run sonar"
-        //         }
-        //     }
-        // }
+        stage ("Code Quality") {
+            steps {
+                withSonarQubeEnv("SonarQube") {
+                    sh "npm install sonar-scanner"
+                    sh "npm run sonar"
+                }
+            }
+        }
         
         
         //     stage ("terraform init") {
