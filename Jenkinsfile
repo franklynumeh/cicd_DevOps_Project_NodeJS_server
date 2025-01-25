@@ -49,8 +49,7 @@ pipeline {
                     sh "npm run sonar"
                 }
             }
-        }
-        
+        }   
 
         stage("Build Docker Image") {
             steps {
