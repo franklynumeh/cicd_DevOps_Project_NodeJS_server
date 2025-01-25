@@ -39,6 +39,9 @@ pipeline {
             }
         }
 
+
+
+
         stage ("Code Quality") {
             steps {
                 withSonarQubeEnv("SonarQube") {
@@ -48,6 +51,14 @@ pipeline {
             }
         }
         
+
+        stage("Build Docker Image") {
+            steps {
+                script {
+                    docker.build("cicd-server-application-image:${env.BUILD_ID}")
+                }
+            }
+        }
         
         //     stage ("terraform init") {
         //     steps {
