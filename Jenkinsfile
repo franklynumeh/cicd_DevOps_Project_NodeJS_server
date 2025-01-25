@@ -52,23 +52,26 @@ pipeline {
         }   
 
        
-   stage("Build Docker Image") {
-            steps {
-                script {
-                    // docker.build("cicd-server-application-image:${env.BUILD_ID}")
-                   sh 'docker build -t docker-images .'
-                }
-            }
-        }
-
-//  stage('Pushing to ECR') {
-//      steps{  
-//          script {
-//                 sh 'aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 756519817970.dkr.ecr.us-east-2.amazonaws.com'
-//                 sh 'docker push 756519817970.dkr.ecr.us-east-2.amazonaws.com/postboard-server-repo:latest'
-//          }
+//    stage("Build Docker Image") {
+//             steps {
+//                 script {
+//                     // docker.build("cicd-server-application-image:${env.BUILD_ID}")
+//                    sh 'docker build -t docker-images .'
+//                 }
+//             }
 //         }
-//       }
+
+ stage('Build Image and Pushing to ECR') {
+     steps{  
+         script {
+                sh 'aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 577638372446.dkr.ecr.us-east-2.amazonaws.com'
+                sh 'docker build -t docker-images .'
+                sh 'docker tag docker-images:latest 577638372446.dkr.ecr.us-east-2.amazonaws.com/docker-images:latest'
+                sh 'docker push 577638372446.dkr.ecr.us-east-2.amazonaws.com/docker-images:latest'
+
+         }
+        }
+      }
    
         
         //     stage('Building image') {
