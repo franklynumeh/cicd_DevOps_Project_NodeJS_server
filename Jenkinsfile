@@ -65,7 +65,7 @@ pipeline {
      steps{  
          script {
                 sh 'aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 577638372446.dkr.ecr.us-east-2.amazonaws.com'
-                sh 'docker build -t node-react-repo .'
+                sh 'docker build -t node-image .'
                 sh 'docker tag node-react-repo:latest 577638372446.dkr.ecr.us-east-2.amazonaws.com/node-react-repo:latest'
                 sh 'docker push 577638372446.dkr.ecr.us-east-2.amazonaws.com/node-react-repo:latest'
          }
