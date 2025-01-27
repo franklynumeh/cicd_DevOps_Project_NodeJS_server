@@ -71,8 +71,8 @@ stage('Deploy Application') {
                 sh '''#!/bin/bash
                 ssh -o StrictHostKeyChecking=no ec2-user@3.148.106.135 "
                 cd /home/ec2-user/main/scripts
-                chmod +x pull_and_deploy-nodeserver
-                ./pull_and_deploy-nodeserver"
+                chmod +x pull_and_deploy-nodeserver.sh
+                ./pull_and_deploy-nodeserver.sh"
                 '''
             }
         }
