@@ -1,0 +1,79 @@
+pipeline {
+    agent any
+
+    stages {
+
+
+        stage ("terraform init") {
+            steps {
+                sh ("terraform init -reconfigure") 
+            }
+        }
+        
+        stage ("terraform plan") {
+            steps {
+                sh ('terraform plan') 
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+        sh 'terraform apply -auto-approve'
+           }
+        }
+
+        stage('Get Terraform Outputs') {
+            steps {
+                script {
+                 def instance_ip = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
+                    env.INSTANCE_IP = instance_ip
+             }
+          }
+        }   
+
+
+        pipeline {
+    agent any
+
+    stages {
+
+        stage ("Terraform Init") {
+            steps {
+                sh 'terraform init -reconfigure' 
+            }
+        }
+        
+        stage ("Terraform Plan") {
+            steps {
+                sh 'terraform plan' 
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                sh 'terraform apply -auto-approve'
+            }
+        }
+
+        stage('Get Terraform Outputs') {
+            steps {
+                script {
+                    def instance_ips = sh(script: 'terraform output -raw instance_ips', returnStdout: true).trim()
+                    writeFile file: 'inventory.ini', text: "[ec2]\n${instance_ips}"
+                }
+            }
+        }
+
+        stage('Run Ansible Playbook') {
+            steps {
+                sh 'ansible-playbook -i inventory.ini configure.yml'
+            }
+        }
+
+    }
+}
+
+
+    }
+}
+ 
