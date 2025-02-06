@@ -59,6 +59,7 @@ stage('Build and Push Docker Image') {
             sh "docker push 577638372446.dkr.ecr.us-east-2.amazonaws.com/docker-images:${latestTag}"
         }
     }
+    
 }
 
 
