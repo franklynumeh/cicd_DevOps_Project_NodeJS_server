@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: react-app-deployment
+  labels:
+    app: my-app-react
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app-react
+  template:
+    metadata:
+      labels:
+        app: my-app-react
+    spec:
+      containers:
+      - name: my-app-container
+        image: 577638372446.dkr.ecr.us-east-2.amazonaws.com/node-react-repo:build-36-latest
+        ports:
+        - containerPort: 3000
+      imagePullSecrets:
+      - name: ecr-reg-cred # Ensure this secret is already created
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app-service-react
+  labels:
+    app: my-app-react
+spec:
+  selector:
+    app: my-app-react
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 3000
+  type: LoadBalancer

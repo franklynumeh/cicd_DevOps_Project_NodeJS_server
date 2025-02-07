@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-app-deployment
+  labels:
+    app: my-app-node
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app-node
+  template:
+    metadata:
+      labels:
+        app: my-app-node
+    spec:
+      containers:
+      - name: my-app-container
+        image: 577638372446.dkr.ecr.us-east-2.amazonaws.com/docker-images:build-30-latest
+        ports:
+        - containerPort: 4000
+      imagePullSecrets:
+      - name: ecr-reg-cred # Ensure this secret is already created
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app-service-node
+  labels:
+    app: my-app-node
+spec:
+  selector:
+    app: my-app-node
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 4000
+  type: LoadBalancer
