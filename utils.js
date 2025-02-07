@@ -14,7 +14,7 @@ export const baseUrl = () =>
     ? process.env.BASE_URL
     : process.env.NODE_ENV !== 'production'
     ? 'http://localhost:3000'
-    : 'http://3.148.106.135:3000';
+    : 'http://a15d899e24dc7424fbe56f168484a175-194877332.us-east-2.elb.amazonaws.com';
 
 
 export const generateToken = (user) => {
