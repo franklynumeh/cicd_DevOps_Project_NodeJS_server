@@ -70,7 +70,7 @@ stage('Deploy Application') {
             // Trigger the deployment script on the target server
             sshagent(['4867e2a4-980d-4950-ba51-c4ca1f763678']) {
                 sh '''#!/bin/bash
-                ssh -o StrictHostKeyChecking=no ec2-user@3.149.214.143 "
+                ssh -o StrictHostKeyChecking=no ec2-user@3.137.173.199 "
                 cd /home/ec2-user/main/scripts
                 chmod +x pull_and_deploy-nodeserver.sh
                 ./pull_and_deploy-nodeserver.sh"
