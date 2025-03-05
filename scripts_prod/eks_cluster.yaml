@@ -1,0 +1,23 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: prod-eks-maincluster  # Cluster name (hyphen instead of underscore)
+  region: us-east-2  # Cluster region
+
+nodeGroups:
+  - name: node-server-eks-worker-nodegroup  # Valid node group name
+    desiredCapacity: 1  # Set desired capacity to 1 to create 1 node
+    minSize: 1  # Minimum size of 1 to ensure at least 1 node
+    maxSize: 1  # Maximum size of 1 to prevent any scaling above 1 node
+    instanceType: t2.large  # EC2 instance type
+    volumeSize: 20  # Optional: Adjust the size of your EBS volume as needed
+    ssh:
+      allow: true  # Optional: Enable SSH access to the nodes (if needed)
+    amiFamily: AmazonLinux2  # Corrected to AmazonLinux2
+    iam:               
+      instanceRoleARN: arn:aws:iam::577638372446:role/EKS-node-role # Replace with your IAM Role ARN
+    labels:
+      app: my-app  # Optional: Add custom labels for your nodes
+    tags:
+      Environment: prod  # Optional: Add custom tags
