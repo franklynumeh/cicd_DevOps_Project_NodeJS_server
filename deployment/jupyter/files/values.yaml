@@ -1,0 +1,112 @@
+hub:
+  db:
+    type: postgres
+    url: '${database_string}'
+  config:
+    Authenticator:
+      admin_users:
+        - rj3r
+        - bmsz
+        - migs
+      allow_existing_users: true
+    #DummyAuthenticator:
+    #  password: test
+    #JupyterHub:
+    #  authenticator_class: dummy
+    JupyterHub:
+      authenticator_class: ldapauthenticator.LDAPAuthenticator
+    LDAPAuthenticator:
+      valid_username_regex: ^[.A-Za-z0-9_-]*$
+      server_address: '${server_address}'
+      server_port: ${server_port}
+      use_ssl: true
+      #tls_strategy: 'insecure'
+      #allowed_groups:
+      #  - CN=groupname,OU=groups,OU=department,DC=institute,DC=de
+      bind_dn_template:
+        - UID={username},OU=people,DC=cms,DC=hhs,DC=gov
+      lookup_dn: false
+      #lookup_dn_search_filter: ({login_attr}={login})
+      #lookup_dn_search_password: {ldap_password}
+      #lookup_dn_search_user: {ldap_bind_user}
+      #lookup_dn_user_dn_attribute: cn
+      user_attribute: UID
+      user_search_base: ou=people,dc=cms,dc=hhs,dc=gov
+singleuser:
+  image:
+    name: quay.io/jupyter/minimal-notebook
+    tag: python-3.12
+  storage:
+    type: "static"
+    static:
+      pvcName: '${pvc_name_string}'
+      subPath: 'home/{username}'
+  extraEnv:
+    CHOWN_HOME: "yes"
+    PIP_INDEX_URL: 'https://${artifactory_user}:${artifactory_password}@artifactory.cloud.cms.gov/artifactory/api/pypi/kmp-aiworkspace/simple'
+  uid: 0
+  fsGid: 0
+  cmd: "start-singleuser.sh"
+#    dynamic:
+#      storageClass: ebs-sc-wait
+  profileList:
+    - display_name: "Pytorch Test"
+      description: "A Pytorch test of a containerized notebook"
+      default: true
+      kubespawner_override:
+        image: quay.io/jupyter/pytorch-notebook:cuda12-python-3.12.7
+  extraNodeAffinity:
+    required:
+      - matchExpressions:
+        - key: hub.jupyter.org/jupyter-user-nodes
+          operator: In
+          values: [jupyter-users]
+  networkPolicy:
+    enabled: true
+    egressAllowRules: 
+      nonPrivateIPs: false
+      privateIPs: true
+      dnsPortsPrivateIPs: false
+proxy:
+  service:
+    type: LoadBalancer
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-name: '${load_balancer_name}'
+      # The below annotations can be used to force the alb controller to provision in specific subnets and with specific ip addresses that are preallocated if needed for dns and zscaler configuration to be deterministic.
+      #service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
+      #service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: 'true'
+      #service.beta.kubernetes.io/aws-load-balancer-type: nlb
+      #service.beta.kubernetes.io/aws-load-balancer-subnets: "subnet-xxxxxxxxxx, subnet-xxxxxxxxxx"
+      #service.beta.kubernetes.io/aws-load-balancer-eip-allocations: "eipalloc-xxxxxxxxxx,eipalloc-xxxxxxxxxx"
+#    type: ClusterIP
+    disableHttpPort: true
+  https:
+    enabled: true
+    type: secret
+    secret:
+      name: jupyterhub-tls
+#    hosts:
+#      - '${hosts}'
+ingress:
+  enabled: false
+#  ingressClassName: alb
+#  annotations:
+#    #external-dns.alpha.kubernetes.io/hostname: 'jupyterhub.example.com'
+#    #kubernetes.io/ingress.class: alb
+#    alb.ingress.kubernetes.io/scheme: internal
+#    alb.ingress.kubernetes.io/target-type: ip
+#    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
+#    alb.ingress.kubernetes.io/load-balancer-name: '${load_balancer_name}'
+#    alb.ingress.kubernetes.io/backend-protocol: HTTPS
+#    #alb.ingress.kubernetes.io/healthcheck-port: '8443'
+#    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:714767623162:certificate/06b7833e-36db-4fb8-bfcd-5613a8efcc47
+#    alb.ingress.kubernetes.io/ssl-redirect: '443'
+#    #alb.ingress.kubernetes.io/healthcheck-path: /hub/health
+#  #hosts: 
+#  #  - '${hosts}'
+#  #pathType: Prefix
+#  #tls:
+#  #  - secretName: jupyterhub-tls
+#  #    hosts:
+#  #      - '${hosts}'
+#  # https://z2jh.jupyter.org/en/stable/kubernetes/amazon/efs_storage.html

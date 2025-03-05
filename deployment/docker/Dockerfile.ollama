@@ -1,0 +1,39 @@
+# Base image with CUDA support
+FROM nvidia/cuda:11.8.0-runtime-ubuntu20.04
+
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install dependencies
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends \
+  git \
+  build-essential \
+  wget \
+  curl \
+  ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+# Install Go (required for building Ollama)
+RUN wget https://golang.org/dl/go1.20.7.linux-amd64.tar.gz && \
+  tar -C /usr/local -xzf go1.20.7.linux-amd64.tar.gz && \
+  rm go1.20.7.linux-amd64.tar.gz
+ENV PATH="/usr/local/go/bin:${PATH}"
+
+# Install Ollama
+RUN git clone https://github.com/jmorganca/ollama.git && \
+  cd ollama/cmd/ollama && \
+  go build -o /usr/local/bin/ollama
+
+# Download the LLaMA model
+RUN mkdir -p /models && \
+  cd /models && \
+  curl -O [URL_TO_YOUR_LLAMA_MODEL] && \
+  unzip [LLAMA_MODEL_ZIP_FILE] && \
+  rm [LLAMA_MODEL_ZIP_FILE]
+
+# Expose the service port
+EXPOSE 11434
+
+# Start the Ollama server
+CMD ["ollama", "serve", "--model", "/models/llama"]

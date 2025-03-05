@@ -1,0 +1,4 @@
+region = "us-east-1"
+key = "ai_workspace_tf_database"
+bucket = "kmp-dev-ai-workspace"
+

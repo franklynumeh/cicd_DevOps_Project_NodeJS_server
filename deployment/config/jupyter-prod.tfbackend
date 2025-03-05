@@ -1,0 +1,4 @@
+region = "us-east-1"
+key = "jupyter-tf"
+bucket = "kmp-ai-workspace-dev"
+

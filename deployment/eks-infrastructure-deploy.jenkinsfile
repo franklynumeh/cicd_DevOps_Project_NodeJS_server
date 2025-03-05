@@ -1,0 +1,160 @@
+pipeline {
+  agent {
+    kubernetes {
+      yaml """
+apiVersion: v1
+kind: Pod
+spec:
+  serviceAccountName: jenkins-role
+  containers:
+  - name: terraform
+    image: hashicorp/terraform:1.8.5
+    command:
+    - cat
+    tty: true
+    volumeMounts:
+    - name: aws-creds
+      mountPath: /root/.aws
+  - name: awscli
+    image: amazon/aws-cli:latest
+    command: ['cat']
+    tty: true
+    volumeMounts:
+    - name: aws-creds
+      mountPath: /root/.aws
+  volumes:
+  - name: aws-creds
+    emptyDir: {}
+    
+"""
+    }
+  }
+  environment {
+    PACKER_VERSION = '1.7.2'
+    CURR_PATH = pwd()
+    AWS_REGION = 'us-east-1'
+  }
+  parameters {
+    booleanParam(name: 'terraformApply', defaultValue: false, description: 'Execute Terrafrom Apply')
+    choice(name: 'AWS_ACCOUNT', choices: [
+        '714767623162:kmp-dev',
+        '213014777092:kmp-ai-workspace-dev',
+    ], description: 'Select the AWS Account for the Build')
+  }
+  stages {
+
+    stage('AWS Config') {
+      steps {
+        container('awscli') {
+          script {
+            def account = params.AWS_ACCOUNT.split(':')[0]
+            def roleArn = "arn:aws:iam::${account}:role/delegatedadmin/developer/jenkins-role"
+
+            sh """
+            # Install jq for JSON parsing
+            yum install -y jq
+
+            # Assume the AWS role and save credentials to /tmp/role-creds.txt
+            aws sts assume-role \
+              --role-arn ${roleArn} \
+              --role-session-name session \
+              --output text \
+              --query Credentials \
+              > /tmp/role-creds.txt
+
+            # Create the credentials file
+            cat > /root/.aws/credentials <<EOF
+[default]
+aws_access_key_id = \$(cut -f1 /tmp/role-creds.txt)
+aws_secret_access_key = \$(cut -f3 /tmp/role-creds.txt)
+aws_session_token = \$(cut -f4 /tmp/role-creds.txt)
+EOF
+
+            # Verify the assumed role
+            aws sts get-caller-identity
+
+            # Clear AWS_WEB_IDENTITY_TOKEN_FILE
+            unset AWS_WEB_IDENTITY_TOKEN_FILE
+
+            # Check S3 and describe VPCs to verify access
+            # aws s3 ls
+            """
+          }
+        }
+      }
+    }
+
+    stage('Run Terraform flow Plan') {
+      steps {
+        container('terraform') {
+          script {
+            def subnetId, vpcId
+            switch(params.AWS_ACCOUNT.split(':')[0]) {
+              case "714767623162":
+                tfvarsFile = "../environments/eks-infrastructure-dev.tfvars"
+                tfConfigFile = "../config/eks-infrastructure-dev.tfbackend"
+                break
+              case "213014777092":
+                tfvarsFile = "../environments/eks-infrastructure-prod.tfvars"
+                tfConfigFile = "../config/eks-infrastructure-prod.tfbackend"
+                break
+              default:
+                error "AWS Account not configured for Subnet and VPC IDs!"
+            }
+          sh """
+          # mkdir -p $HOME/.aws
+          # cp -v .aws-creds $HOME/.aws/credentials
+          unset AWS_WEB_IDENTITY_TOKEN_FILE
+
+          # Run Terraform
+          cd deployment/eks-infrastructure
+          terraform init -backend-config "${tfConfigFile}"
+          terraform plan -var-file="${tfvarsFile}"
+          """
+          }
+        }
+      }
+    }
+    stage('Approve Terraform Apply') {
+       when {
+        expression { return !params.terraformApply }
+      }
+      steps {
+        input message: 'Approve Terraform Apply?', ok: 'Apply'
+      }
+    }
+    stage('Run Terraform flow Apply') {
+      steps {
+        container('terraform') {
+          script {
+            def subnetId, vpcId
+            switch(params.AWS_ACCOUNT.split(':')[0]) {
+              case "714767623162":
+                tfvarsFile = "../environments/eks-infrastructure-dev.tfvars"
+                break
+              case "213014777092":
+                tfvarsFile = "../environments/eks-infrastructure-prod.tfvars"
+                break
+              default:
+                error "AWS Account not configured for Subnet and VPC IDs!"
+            }
+          sh """
+          unset AWS_WEB_IDENTITY_TOKEN_FILE
+          # Run Terraform Apply
+          cd deployment/eks-infrastructure
+          terraform apply -var-file="${tfvarsFile}" -auto-approve
+          """
+          }
+        }
+      }
+    }
+  }
+  post {
+    success {
+      echo 'Terraform Build Successful!'
+    }
+    failure {
+      echo 'Terraform Build Failed!'
+    }
+  }
+}

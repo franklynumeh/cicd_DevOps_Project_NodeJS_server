@@ -1,0 +1,4 @@
+region = "us-east-1"
+key = "database-tf"
+bucket = "kmp-ai-workspace-dev"
+
