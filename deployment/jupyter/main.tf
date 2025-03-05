@@ -50,6 +50,8 @@ resource "helm_release" "jupyterhub_helm_deployment" {
             "hosts" = "${var.zone_name}"
             "artifactory_user" = "${data.aws_secretsmanager_secret_version.artifactory_user_secret_value.secret_string}"
             "artifactory_password" = "${data.aws_secretsmanager_secret_version.artifactory_password_secret_value.secret_string}"
+            "ui_image" = "artifactory.cloud.cms.gov/docker/jupyterhub-ui:latest"  
+
         }
     )}"
   ]

@@ -1,0 +1,15 @@
+@each $heading-size in ("5xl", "4xl", "3xl", "2xl", "xl", "lg", "md", "sm") {
+  .text-heading-#{$heading-size} {
+    font-size: var(--font-size-#{$heading-size});
+    font-weight: var(--font-weight-heading-#{$heading-size});
+    font-family: var(--font-family-heading);
+  }
+}
+
+@each $body-size in ("lg", "md", "sm") {
+  .text-body-#{$body-size} {
+    font-size: var(--font-size-#{$body-size});
+    font-weight: var(--font-weight-body-#{$body-size});
+    font-family: var(--font-family-body);
+  }
+}

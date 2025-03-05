@@ -7,40 +7,43 @@ kind: Pod
 spec:
   serviceAccountName: jenkins-role
   volumes:
-  - name: shared-data
-    emptyDir: {}
-  - name: aws-creds
-    emptyDir: {}
+    - name: shared-data
+      emptyDir: {}
+    - name: aws-creds
+      emptyDir: {}
   containers:
-  - name: terraform
-    image: hashicorp/terraform:1.8.5
-    command:
-    - cat
-    tty: true
-    volumeMounts:
-    - name: aws-creds
-      mountPath: /root/.aws
-  - name: awscli
-    image: artifactory.cloud.cms.gov/docker/amazon/aws-cli:2.7.30
-    command: ['cat']
-    tty: true
-    volumeMounts:
-    - name: shared-data
-      mountPath: /usr/share/data
-    - name: aws-creds
-      mountPath: /root/.aws
-  - name: kaniko
-    image: gcr.io/kaniko-project/executor:debug
-    command: ['/busybox/cat']
-    tty: true
-    volumeMounts:
-    - name: shared-data
-      mountPath: /usr/share/data
-    resources:
-      limits:
-        cpu: 5000m
-        memory: 4Gi
-        ephemeral-storage: 20Gi
+    - name: terraform
+      image: hashicorp/terraform:1.8.5
+      command: ["cat"]
+      tty: true
+      volumeMounts:
+        - name: aws-creds
+          mountPath: /root/.aws
+    - name: awscli
+      image: artifactory.cloud.cms.gov/docker/amazon/aws-cli:2.7.30
+      command: ["cat"]
+      tty: true
+      volumeMounts:
+        - name: shared-data
+          mountPath: /usr/share/data
+        - name: aws-creds
+          mountPath: /root/.aws
+    - name: kaniko
+      image: gcr.io/kaniko-project/executor:debug
+      command: ["/busybox/cat"]
+      tty: true
+      volumeMounts:
+        - name: shared-data
+          mountPath: /usr/share/data
+      resources:
+        limits:
+          cpu: "5000m"
+          memory: "4Gi"
+          ephemeral-storage: "20Gi"
+    - name: node
+      image: node:18
+      command: ["cat"]
+      tty: true
 """
     }
   }
@@ -48,6 +51,8 @@ spec:
     PACKER_VERSION = '1.7.2'
     CURR_PATH = pwd()
     AWS_REGION = 'us-east-1'
+    JUPYTER_ARTIFACTORY_SECRET_PATH_USER = "aiworkspace/dev/jupytersingleuser/artifactoryuser"
+    JUPYTER_ARTIFACTORY_SECRET_PATH_PASSWORD = "aiworkspace/dev/jupytersingleuser/artifactorypassword"
   }
   parameters {
     booleanParam(name: 'terraformApply', defaultValue: false, description: 'Execute Terrafrom Apply')
@@ -97,6 +102,50 @@ EOF
         }
       }
     }
+
+     stage('Build JupyterHub Frontend') {
+      steps {
+        container('node') {
+          script {
+            sh """
+            cd deployment/jupyter-cms-ui
+            npm install
+            npm run build
+            """
+          }
+        }
+      }
+    }
+stage('Build & Push UI Docker Image') {
+    steps {
+        withAWS(credentials: 'aws-credentials-id') {  
+            script {
+                def ECR_REGISTRY = "714767623162.dkr.ecr.us-east-1.amazonaws.com"
+                def ECR_REPOSITORY = "jupyter-cms-ui-images"
+                def buildTag = "build-${env.BUILD_NUMBER}"
+                def latestTag = "latest"  
+
+              
+                sh """
+                aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY
+                """
+
+               
+                container('kaniko') {
+                    sh """
+                    /kaniko/executor \
+                        --context=/workspace/seas-ai-workspace/deployment/docker \
+                        --dockerfile=./Dockerfile \
+                        --destination=$ECR_REGISTRY/$ECR_REPOSITORY:${buildTag} \
+                        --destination=$ECR_REGISTRY/$ECR_REPOSITORY:${latestTag} \
+                        --cache=true \
+                        --docker-config=/kaniko/.docker/
+                    """
+                }
+            }
+        }
+    }
+}
     stage('Run Terraform flow Plan') {
       steps {
         container('terraform') {

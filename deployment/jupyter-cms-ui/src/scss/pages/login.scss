@@ -1,0 +1,60 @@
+.login-screen {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: var(--spacer-6) 0;
+
+  .login-background {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100vw;
+    min-width: 1024px;
+    z-index: -1;
+  }
+
+  .login-layout-card {
+    display: block;
+    background-color: var(--color-white);
+    width: 542px;
+    border-radius: var(--radius-large);
+    box-shadow: 0 4px 20px 4px #00000014;
+    padding: var(--spacer-6) var(--spacer-4);
+  
+    .login-layout-card-logo {
+      color: var(--color-primary-darkest);
+      text-align: center;
+    }
+
+    .login-layout-card-powered-by {
+      display: flex;
+      align-items: center;
+      gap: var(--spacer-1);
+      margin-top: var(--spacer-2);
+      justify-content: flex-end;
+      font-size: var(--font-size-sm);
+
+      > img {
+        height: 2rem;
+      }
+    }
+
+    .login-layout-card-title {
+      margin-top: var(--spacer-2);
+    }
+
+    .login-button {
+      width: 100%;
+      margin-top: var(--spacer-3);
+    }
+
+    // overrides CMS DS for max-width
+    .ds-c-field {
+      max-width: none;
+    }
+  }
+}

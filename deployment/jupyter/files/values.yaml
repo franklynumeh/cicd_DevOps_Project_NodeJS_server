@@ -67,9 +67,26 @@ singleuser:
       nonPrivateIPs: false
       privateIPs: true
       dnsPortsPrivateIPs: false
+ # Added UI Container to serve custom-built JupyterHub UI
+  UIContainers:
+    - name: jupyter-ui
+      image: '${ui_image}'
+      volumeMounts:
+        - name: ui-templates
+          mountPath: /usr/local/share/jupyterhub/templates_cms/
+        - name: ui-static
+          mountPath: /usr/local/share/jupyterhub/static/external/
+
+  # Added necessary volume mounts to persist UI assets
+  UIVolumes:
+    - name: ui-templates
+      emptyDir: {}
+    - name: ui-static
+      emptyDir: {} 
+  
 proxy:
   service:
-    type: LoadBalancer
+    type: LoadBalancer  
     annotations:
       service.beta.kubernetes.io/aws-load-balancer-name: '${load_balancer_name}'
       # The below annotations can be used to force the alb controller to provision in specific subnets and with specific ip addresses that are preallocated if needed for dns and zscaler configuration to be deterministic.
@@ -109,4 +126,4 @@ ingress:
 #  #  - secretName: jupyterhub-tls
 #  #    hosts:
 #  #      - '${hosts}'
-#  # https://z2jh.jupyter.org/en/stable/kubernetes/amazon/efs_storage.html
+#  # https://z2jh.jupyter.org/en/stable/kubernetes/amazon/efs_storage.html 

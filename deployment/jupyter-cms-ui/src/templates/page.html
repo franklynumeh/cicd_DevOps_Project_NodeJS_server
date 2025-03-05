@@ -1,0 +1,211 @@
+<!--
+  Forked from jupyterhub repository, j2cf8681748eb23d6bec153318680850b9f243956
+  https://github.com/jupyterhub/jupyterhub/blob/7c71e517ef709923ee3601e879b2a402626b9fb2/share/jupyterhub/templates/page.html
+-->
+
+{% from "components/_cms-alert.html" import cms_alert with context %}
+
+{% macro modal(title, btn_label=None, btn_class="btn-primary") %}
+  {% set key = title.replace(' ', '-').lower() %}
+  {% set btn_label = btn_label or title %}
+  <div class="modal fade"
+       id="{{ key }}-dialog"
+       tabindex="-1"
+       role="dialog"
+       aria-labelledby="{{ key }}-label"
+       aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="{{ key }}-label">{{ title }}</h2>
+          <button type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"></button>
+        </div>
+        <div class="modal-body">{{ caller() }}</div>
+        <div class="modal-footer">
+          <button type="button"
+                  class="btn {{ btn_class }}"
+                  data-bs-dismiss="modal"
+                  data-dismiss="modal">{{ btn_label }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endmacro %}
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>
+      {%- block title -%}
+        JupyterHub
+      {%- endblock title %}
+      | CMS AI Workspace
+    </title>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block stylesheet %}
+      <link rel="stylesheet"
+            href="{{ static_url('external/css/index.min.css') }}"
+            type="text/css" />
+    {% endblock stylesheet %}
+    {% block favicon %}
+      <link rel="icon" href="{{ static_url('external/assets/cms_logo.png') }}" type="image/png" />
+    {% endblock favicon %}
+    {% block scripts %}
+      <script src="{{static_url("components/bootstrap/dist/js/bootstrap.bundle.min.js") }}"
+              type="text/javascript"
+              charset="utf-8"></script>
+      <script src="{{static_url("components/requirejs/require.js") }}"
+              type="text/javascript"
+              charset="utf-8"></script>
+      <script src="{{static_url("components/jquery/dist/jquery.min.js") }}"
+              type="text/javascript"
+              charset="utf-8"></script>
+      <!-- <script src="{{static_url("js/darkmode.js") }}"
+              type="text/javascript"
+              charset="utf-8"></script> -->
+    {% endblock scripts %}
+    {# djlint js formatting doesn't handle template blocks in js #}
+    {# djlint: off #}
+    <script type="text/javascript">
+      require.config({
+        {% if version_hash %}
+        urlArgs: "v={{version_hash}}",
+        {% endif %}
+        baseUrl: '{{static_url("js", include_version=False)}}',
+        paths: {
+          components: '../components',
+          jquery: '../components/jquery/dist/jquery.min',
+          moment: "../components/moment/moment",
+        },
+      });
+
+      window.jhdata = {
+        base_url: "{{base_url}}",
+        prefix: "{{prefix}}",
+        {% if user %}
+        {#- Autoescaping in templates is turned on in JupyterHub, #}
+        {#-  need `| safe` to prevent escaping #}
+        {#- `https://github.com/pallets/markupsafe/blob/2.1.4/src/markupsafe/_native.py#L6` #}
+        user: "{{ user.json_escaped_name | safe }}",
+        {% endif %}
+        {% if admin_access %}
+        admin_access: true,
+        {% else %}
+        admin_access: false,
+        {% endif %}
+        {% if not no_spawner_check and user and user.spawner.options_form %}
+        options_form: true,
+        {% else %}
+        options_form: false,
+        {% endif %}
+        xsrf_token: "{{ xsrf_token }}",
+      };
+
+</script>
+    {# djlint: on #}
+    {% block meta %}
+      <meta name="description" content="JupyterHub">
+      <meta name="keywords" content="Jupyter, JupyterHub">
+    {% endblock meta %}
+  </head>
+  <body>
+    <noscript>
+      {% call cms_alert(variation='error', heading='JupyterHub requires Javascript.', id='noscript') %}
+        Please enable it to proceed.
+      {% endcall %}
+    </noscript>
+    {% block announcement %}
+      {% if announcement %}
+        {% call cms_alert() %}
+          {{ announcement | safe }}
+        {% endcall %}
+      {% endif %}
+    {% endblock announcement %}
+    {% block nav_bar %}
+      <header class="base-header {% block nav_bar_class %}{% endblock nav_bar_class %}">
+        <div class="base-header-container">
+          {% block logo %}
+            <a
+              href="{{ logo_url or base_url }}"
+              class="left-header"
+              tabindex="-1"
+            >
+              <img src="{{ static_url('external/assets/cms_logo.png') }}"
+                alt="CMS logo"
+                height="66"
+                width="auto"
+                title="CMS Logo" />
+              <span class="header-title">
+                AI Workspace
+              </span>
+            </a>
+            {% endblock logo %}
+          <div class="right-header">
+            {% if user %}
+              {% block nav_bar_right_items %}
+                <a class="right-header-link" href="{{ base_url }}home">Home</a>
+                <a class="right-header-link" href="{{ base_url }}token">Token</a>
+              {% endblock nav_bar_right_items %}
+              {% block nav_bar_left_items %}
+                {% if 'admin-ui' in parsed_scopes %}
+                  <a class="right-header-link" href="{{ base_url }}admin">Admin</a>
+                {% endif %}
+                {% if services %}
+                  <div class="nav-item dropdown">
+                    <a href="#"
+                        class="right-header-link dropdown-toggle"
+                        data-bs-toggle="dropdown"
+                        role="button"
+                        aria-expanded="false">Services</a>
+                    <ul class="dropdown-menu">
+                      {% for service in services %}
+                        {% block service scoped %}
+                          <li>
+                            <a class="dropdown-item" href="{{ service.href }}">{{ service.name }}</a>
+                          </li>
+                        {% endblock service %}
+                      {% endfor %}
+                    </ul>
+                  </div>
+                {% endif %}
+              {% endblock nav_bar_left_items %}
+            {% endif %}
+            {% block login_widget %}
+              {% if user %}
+                <div class="right-header-divider">&nbsp;</div>
+                <div>{{ user.name }}</div>
+                <div class="right-header-divider">&nbsp;</div>
+                <a id="logout"
+                   role="button"
+                   class="right-header-link"
+                   href="{{ logout_url }}"> <i aria-hidden="true" class="fa fa-sign-out"></i> Logout</a>
+              {% else %}
+                <a id="login"
+                   role="button"
+                   class="right-header-link"
+                   href="{{ login_url }}">Login</a>
+              {% endif %}
+          {% endblock login_widget %}
+          </div>
+        </div>
+      </header>
+      {% block header %}
+      {% endblock header %}
+    {% endblock nav_bar %}
+    <main id="root">
+      {% block main %}
+      {% endblock main %}
+    </main>
+    {% block footer %}
+    {% endblock footer %}
+    {% call modal('Error', btn_label='OK') %}
+      <div class="ajax-error alert alert-danger">The error</div>
+    {% endcall %}
+    {% block script %}
+    {% endblock script %}
+  </body>
+</html>
