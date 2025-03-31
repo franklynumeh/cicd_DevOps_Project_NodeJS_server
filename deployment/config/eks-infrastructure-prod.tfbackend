@@ -1,4 +1,0 @@
-region = "us-east-1"
-key = "eks-infrastructure-rf"
-bucket = "kmp-ai-workspace-dev"
-

@@ -1,4 +1,0 @@
-region = "us-east-1"
-key = "ai_workspace_tf_nfs"
-bucket = "kmp-ai-workspace-dev"
-
