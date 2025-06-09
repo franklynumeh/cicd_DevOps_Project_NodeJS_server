@@ -1,36 +1,36 @@
 eksctl create cluster \
-  --name shopping-app-cluster \
+  --name frank-cluster \
   --region us-east-1 \
   --without-nodegroup
 eksctl create nodegroup \
-  --cluster shopping-app-cluster \
+  --cluster frank-cluster \
   --region us-east-1 \
   --name ec2-workers \
   --node-type t3.medium \
   --nodes 1 \
   --nodes-min 1 \
-  --nodes-max 3 \
+  --nodes-max 2 \
   --ssh-access \
   --ssh-public-key eks-test-ec2 \
   --managed
 
 
-  aws eks update-kubeconfig --name shopping-app-cluster --region us-east-1
+  aws eks update-kubeconfig --name frank-cluster --region us-east-1
 # then build and push to ecr
 # then run deply yaml file - these deploy a deploymen,namespace, service and ingress resourec, not an ingress controller yet
 
 # the ingress controller will read the ingress resourece and this will create an alb for us and configure it
 
-eksctl utils associate-iam-oidc-provider --cluster shopping-app-cluster --approve
+eksctl utils associate-iam-oidc-provider --cluster frank-cluster --approve
 
 
 aws iam create-policy \
     --policy-name AWSLoadBalancerControllerIAMPolicy \
-    --policy-document file://iam_policy.json
+    --policy-document file://aws-load-balancer-controller-policy.json
 
 
 eksctl create iamserviceaccount \
-  --cluster=shopping-app-cluster \
+  --cluster=frank-cluster \
   --namespace=kube-system \
   --name=aws-load-balancer-controller \
   --role-name AmazonEKSLoadBalancerControllerRole \
@@ -44,15 +44,15 @@ eksctl create iamserviceaccount \
   helm repo update eks
 
 helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system \
-  --set clusterName=shopping-application-app \
+  --set clusterName=frank-cluster \
   --set serviceAccount.create=false \
   --set serviceAccount.name=aws-load-balancer-controller \
   --set region=us-east-1 \
-  --set vpcId=vpc-0d5ce4df522c52c4b
+  --set vpcId=vpc-09ccd9ca39d55a84c
 
   kubectl get deployment -n kube-system aws-load-balancer-controller
 
-eksctl delete cluster --name shopping-app-cluster --region us-east-1
+eksctl delete cluster --name frank-cluster --region us-east-1
 
 aws iam detach-role-policy \
   --role-name AmazonEKSLoadBalancerControllerRole \
@@ -64,4 +64,15 @@ aws iam delete-role --role-name AmazonEKSLoadBalancerControllerRole
 
 aws ecr delete-repository --repository-name shopping-app-rep --force
 
-delete dns record
+delete dns record - alb
+
+delete cloudformation stack manually on aws console
+
+
+installgit
+node
+awscli
+eksctl
+kubectl
+helm
+docker
